@@ -60,7 +60,7 @@ export function useTeamData() {
         })
 
         // Calculate team metrics
-        const targetMeters = membersCount * 1000000 // 1M per member
+        const targetMeters = 17000000 // Fixed team goal: 17 million meters
         const deficit = Math.max(0, targetMeters - totalMeters)
         
         // Calculate remaining days until Friday, September 5, 2025 EST
