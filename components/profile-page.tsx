@@ -22,6 +22,7 @@ import Link from "next/link"
 import { doc, updateDoc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { useToast } from "@/hooks/use-toast"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 
 interface ProfilePageProps {
   userId?: string
@@ -39,6 +40,9 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { toast } = useToast()
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [pendingFile, setPendingFile] = useState<File | null>(null)
 
   // Get the actual user ID for badge data
   const actualUserId = selectedUserId === "current-user" ? user?.id : selectedUserId
@@ -93,7 +97,7 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
   const isCurrentUser = selectedUserId === "current-user" || selectedUserId === user?.id
   const hasNoWorkouts = workoutCount === 0
 
-  const handleProfilePictureUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file || !user) return
 
@@ -117,30 +121,35 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
       return
     }
 
-    setIsUploading(true)
+    // Show preview modal
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setPreviewImage(e.target?.result as string)
+      setShowPreviewModal(true)
+      setPendingFile(file)
+    }
+    reader.readAsDataURL(file)
+  }
 
+  const handleAcceptProfilePicture = async () => {
+    if (!pendingFile || !user) return
+    setIsUploading(true)
     try {
       // Convert file to base64 for storage
       const reader = new FileReader()
       reader.onload = async (e) => {
         const base64String = e.target?.result as string
-        
-        // Update the user document in Firestore
         const userRef = doc(db, "users", user.id)
         await updateDoc(userRef, {
           profileImage: base64String
         })
-
         toast({
           title: "Profile picture updated",
           description: "Your profile picture has been successfully updated!",
         })
-
-        // Refresh the page to show the new image
         window.location.reload()
       }
-      
-      reader.readAsDataURL(file)
+      reader.readAsDataURL(pendingFile)
     } catch (error) {
       console.error("Error uploading profile picture:", error)
       toast({
@@ -150,7 +159,17 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
       })
     } finally {
       setIsUploading(false)
+      setShowPreviewModal(false)
+      setPreviewImage(null)
+      setPendingFile(null)
     }
+  }
+
+  const handleCancelProfilePicture = () => {
+    setShowPreviewModal(false)
+    setPreviewImage(null)
+    setPendingFile(null)
+    if (fileInputRef.current) fileInputRef.current.value = ""
   }
 
   const triggerFileInput = () => {
@@ -482,6 +501,43 @@ export default function ProfilePage({ userId }: ProfilePageProps) {
           </Card>
         </div>
       )}
+
+      {/* Profile Picture Preview Modal */}
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Preview Profile Picture</DialogTitle>
+          </DialogHeader>
+          {previewImage && (
+            <div className="flex flex-col items-center">
+              <div
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "4px solid #3b82f6",
+                  marginBottom: 16,
+                }}
+              >
+                <img
+                  src={previewImage}
+                  alt="Profile Preview"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter className="flex flex-row gap-2 justify-end">
+            <Button variant="outline" onClick={handleCancelProfilePicture} disabled={isUploading}>
+              Cancel
+            </Button>
+            <Button onClick={handleAcceptProfilePicture} disabled={isUploading}>
+              {isUploading ? "Uploading..." : "Accept"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

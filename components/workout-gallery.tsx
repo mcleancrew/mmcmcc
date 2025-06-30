@@ -6,6 +6,16 @@ interface WorkoutGalleryProps {
   workouts: Workout[]
 }
 
+function getImageSrc(image: string | undefined): string {
+  if (!image) return "/placeholder.png";
+  if (image.startsWith("data:image/")) return image;
+  // If it's a base64 string without prefix, assume PNG
+  if (/^[A-Za-z0-9+/=]+$/.test(image) && image.length > 100) {
+    return `data:image/png;base64,${image}`;
+  }
+  return image;
+}
+
 export function WorkoutGallery({ workouts }: WorkoutGalleryProps) {
   const workoutsWithImages = workouts.filter((workout) => workout.images && workout.images.length > 0)
 
@@ -28,7 +38,7 @@ export function WorkoutGallery({ workouts }: WorkoutGalleryProps) {
           return (
             <div key={`${workout.id}-${index}`} className="relative group overflow-hidden rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:rotate-1 hover:shadow-xl">
               <img
-                src={image || "/placeholder.png"}
+                src={getImageSrc(image)}
                 alt={`Workout on ${formatDate(workout.date)}`}
                 className="w-full aspect-square object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:rotate-2"
               />
