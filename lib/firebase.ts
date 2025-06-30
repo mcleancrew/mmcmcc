@@ -4,13 +4,13 @@ import { getFirestore } from 'firebase/firestore'
 import { getStorage } from 'firebase/storage'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDPvmBI9JIqwe6WIJGGyS2_e_Pv7rdOgbg",
-  authDomain: "mccmerge.firebaseapp.com",
-  projectId: "mccmerge",
-  storageBucket: "mccmerge.firebasestorage.app",
-  messagingSenderId: "843997224921",
-  appId: "1:843997224921:web:dd8cd02af134563b13c3c8",
-  measurementId: "G-9RQCKM0JES"
+  apiKey: "AIzaSyDbL_-yIxKgL_6lu0TOWZpGuF3KeT7iluo",
+  authDomain: "mcc-summer-leaderboard.firebaseapp.com",
+  projectId: "mcc-summer-leaderboard",
+  storageBucket: "mcc-summer-leaderboard.firebasestorage.app",
+  messagingSenderId: "376614411221",
+  appId: "1:376614411221:web:9afe27edc84cf5de3b7b5c",
+  measurementId: "G-SKPNS56ZDN"
 }
 
 // Initialize Firebase
