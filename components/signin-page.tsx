@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Users, Trophy, Upload } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { sendPasswordResetEmail } from "firebase/auth"
+import { auth } from "@/lib/firebase"
 
 export default function SigninPage() {
   const { signIn, continueAsGuest, isAuthenticated, isLoading: authLoading, isGuest, user } = useAuth()
@@ -96,6 +98,40 @@ export default function SigninPage() {
     router.push("/")
   }
 
+  const handlePasswordReset = async () => {
+    let email = formData.email
+    if (!email) {
+      email = window.prompt("Please enter your email to reset your password:") || ""
+    }
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address to reset your password.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      await sendPasswordResetEmail(auth, email)
+      toast({
+        title: "Password Reset Email Sent",
+        description: `A password reset link has been sent to ${email}. Please check your inbox.`,
+      })
+    } catch (error: any) {
+      let errorMessage = "Failed to send password reset email."
+      if (error.message.includes("user-not-found")) {
+        errorMessage = "No account found with this email."
+      } else if (error.message.includes("invalid-email")) {
+        errorMessage = "Invalid email format."
+      }
+      toast({
+        title: "Password Reset Failed",
+        description: errorMessage,
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 p-4">
       <div className="w-full max-w-md">
@@ -167,12 +203,7 @@ export default function SigninPage() {
                   <button
                     type="button"
                     className="text-blue-600 hover:text-blue-500 hover:underline"
-                    onClick={() => {
-                      toast({
-                        title: "Password Reset",
-                        description: "Password reset functionality would be implemented here",
-                      })
-                    }}
+                    onClick={handlePasswordReset}
                   >
                     Forgot your password?
                   </button>

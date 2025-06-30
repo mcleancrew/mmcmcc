@@ -36,11 +36,15 @@ export function WorkoutGallery({ workouts }: WorkoutGalleryProps) {
           const isMultipleImages = totalImages > 1
           
           return (
-            <div key={`${workout.id}-${index}`} className="relative group overflow-hidden rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:rotate-1 hover:shadow-xl">
+            <div key={`${workout.id}-${index}`} 
+              className="relative group overflow-hidden rounded-md transition-all duration-300 ease-in-out transform hover:scale-105 hover:rotate-1 hover:shadow-xl min-w-0"
+              style={{ width: "100%", aspectRatio: "1 / 1" }}
+            >
               <img
                 src={getImageSrc(image)}
                 alt={`Workout on ${formatDate(workout.date)}`}
-                className="w-full aspect-square object-cover transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:rotate-2"
+                className="w-full h-full object-cover block transition-transform duration-500 ease-in-out group-hover:scale-110 group-hover:rotate-2"
+                style={{ display: "block" }}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out flex flex-col justify-end p-2">
                 <p className="text-white text-xs font-medium transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">

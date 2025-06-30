@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -348,6 +348,7 @@ export default function WorkoutSubmission() {
   const [boatType, setBoatType] = useState<"1x" | "2x">("1x")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   const workoutTypes = [
     { id: "erg" as WorkoutType, name: "Erg", icon: Rows, color: "bg-blue-100 text-blue-700" },
@@ -371,6 +372,37 @@ export default function WorkoutSubmission() {
       reader.readAsDataURL(file)
     }
   }
+
+  useEffect(() => {
+    const handlePaste = (event: ClipboardEvent) => {
+      if (event.clipboardData) {
+        const items = event.clipboardData.items
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
+          if (item.type.startsWith("image/")) {
+            const file = item.getAsFile()
+            if (file) {
+              // Set as selected file and show preview
+              setSelectedFiles({ 0: file, length: 1, item: (idx: number) => (idx === 0 ? file : undefined) } as FileList)
+              const reader = new FileReader()
+              reader.onload = (e) => {
+                setImagePreview(e.target?.result as string)
+              }
+              reader.readAsDataURL(file)
+              toast({
+                title: "Image attached from clipboard!",
+                description: file.name,
+              })
+              event.preventDefault()
+              break
+            }
+          }
+        }
+      }
+    }
+    document.addEventListener("paste", handlePaste)
+    return () => document.removeEventListener("paste", handlePaste)
+  }, [toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -650,21 +682,6 @@ export default function WorkoutSubmission() {
                   <Upload className="mr-2 h-4 w-4" />
                   Upload
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="bg-white text-slate-700 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
-                  onClick={() => {
-                    // In a real app, this would open the camera
-                    toast({
-                      title: "Camera access",
-                      description: "Camera functionality would open here",
-                    })
-                  }}
-                >
-                  <Camera className="mr-2 h-4 w-4" />
-                  Camera
-                </Button>
               </div>
               <input 
                 id="image-upload" 
@@ -673,6 +690,7 @@ export default function WorkoutSubmission() {
                 multiple
                 className="hidden" 
                 onChange={handleImageUpload} 
+                ref={fileInputRef}
               />
 
               {imagePreview && (
