@@ -194,11 +194,21 @@ export function useBadgeData(userId?: string) {
       // Calculate real-time badges
       const realTimeBadges = calculateRealTimeBadges(activities, userData)
       
-      // Merge badges, prioritizing real-time calculations for time-based badges
-      const mergedBadges = {
-        ...lifetimeBadges,
-        ...realTimeBadges
-      }
+      // Merge badges, making all earned badges permanent
+      const mergedBadges: { [badgeId: string]: BadgeProgress } = { ...lifetimeBadges }
+      Object.keys(lifetimeBadges).forEach(badgeId => {
+        const oldBadge = badgeData.badges[badgeId]
+        const newBadge = lifetimeBadges[badgeId]
+        if (oldBadge?.earned) {
+          mergedBadges[badgeId] = {
+            ...newBadge,
+            earned: true,
+            earnedDate: oldBadge.earnedDate && (!newBadge.earnedDate || oldBadge.earnedDate < newBadge.earnedDate)
+              ? oldBadge.earnedDate
+              : newBadge.earnedDate,
+          }
+        }
+      })
       
       const hasNewEarnedBadges = checkForNewEarnedBadges(badgeData.badges, mergedBadges)
       
