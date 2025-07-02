@@ -194,11 +194,21 @@ export function useBadgeData(userId?: string) {
       // Calculate real-time badges
       const realTimeBadges = calculateRealTimeBadges(activities, userData)
       
-      // Merge badges, prioritizing real-time calculations for time-based badges
-      const mergedBadges = {
-        ...lifetimeBadges,
-        ...realTimeBadges
-      }
+      // Merge badges, preserving any already earned badges
+      const mergedBadges = { ...lifetimeBadges }
+      
+      // For all badges, if they're already earned, keep them as-is
+      Object.entries({ ...lifetimeBadges, ...realTimeBadges }).forEach(([badgeId, newBadge]) => {
+        const existingBadge = badgeData.badges[badgeId]
+        
+        if (existingBadge?.earned) {
+          // If badge is already earned, don't change it
+          mergedBadges[badgeId] = existingBadge
+        } else {
+          // If not earned, use the new calculation
+          mergedBadges[badgeId] = newBadge
+        }
+      })
       
       const hasNewEarnedBadges = checkForNewEarnedBadges(badgeData.badges, mergedBadges)
       
@@ -230,9 +240,8 @@ export function useBadgeData(userId?: string) {
       await setDoc(badgeRef, cleanedData, { merge: true })
     }
 
-    // Check if we need to recalculate (new day or data changed)
-    const needsRecalculation = isNewDay(badgeData.lastCalculated) || 
-                              badgeData.lastCalculated < userData.lastUpdated
+    // Check if we need to recalculate (new day)
+    const needsRecalculation = isNewDay(badgeData.lastCalculated)
 
     if (needsRecalculation) {
       updateBadges()

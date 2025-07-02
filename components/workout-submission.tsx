@@ -263,11 +263,21 @@ const updateUserBadges = async (userId: string, newWorkoutData: any) => {
     // Calculate real-time badges
     const realTimeBadges = calculateRealTimeBadges(activities)
     
-    // Merge badges, prioritizing real-time calculations for time-based badges
-    const mergedBadges = {
-      ...newBadges,
-      ...realTimeBadges
-    }
+    // Merge badges, preserving any already earned badges
+    const mergedBadges = { ...newBadges }
+    
+    // For all badges, if they're already earned, keep them as-is
+    Object.entries({ ...newBadges, ...realTimeBadges }).forEach(([badgeId, newBadge]) => {
+      const existingBadge = oldBadges[badgeId]
+      
+      if (existingBadge?.earned) {
+        // If badge is already earned, don't change it
+        mergedBadges[badgeId] = existingBadge
+      } else {
+        // If not earned, use the new calculation
+        mergedBadges[badgeId] = newBadge
+      }
+    })
     
     // Find newly earned badges by comparing old and new states
     const newlyEarnedBadges = Object.entries(mergedBadges)
