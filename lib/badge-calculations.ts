@@ -128,42 +128,23 @@ export const calculateBadgeProgress = (
         lastUpdated: now
       }
 
-    case "100k-day": {
-      // Earned if the user has ever completed 100,000 meters in a single day
-      const metersByDay: { [date: string]: number } = {}
-      activities.forEach(activity => {
-        const date = activity.date ? (typeof activity.date === 'string' ? activity.date.split('T')[0] : activity.date) : undefined
-        if (!date) return
-        metersByDay[date] = (metersByDay[date] || 0) + (Number(activity.points) || 0)
-      })
-      const earnedDateEntry = Object.entries(metersByDay).find(([_, meters]) => meters >= 100000)
+    case "100k-day":
+      // This should be calculated in real-time, not migrated
       return {
-        earned: !!earnedDateEntry,
-        earnedDate: earnedDateEntry ? new Date(earnedDateEntry[0]) : undefined,
-        progress: earnedDateEntry ? 100000 : Math.max(0, ...Object.values(metersByDay)),
+        earned: false,
+        progress: 0,
         maxProgress: 100000,
         lastUpdated: now
       }
-    }
 
-    case "jack-of-all-trades": {
-      // Earned if the user has ever completed 6 workout types in a single day
-      const typesByDay: { [date: string]: Set<string> } = {}
-      activities.forEach(activity => {
-        const date = activity.date ? (typeof activity.date === 'string' ? activity.date.split('T')[0] : activity.date) : undefined
-        if (!date) return
-        if (!typesByDay[date]) typesByDay[date] = new Set()
-        typesByDay[date].add(normalizeActivityType(activity.activity))
-      })
-      const earnedDateEntry = Object.entries(typesByDay).find(([_, types]) => types.size >= 6)
+    case "jack-of-all-trades":
+      // This should be calculated in real-time, not migrated
       return {
-        earned: !!earnedDateEntry,
-        earnedDate: earnedDateEntry ? new Date(earnedDateEntry[0]) : undefined,
-        progress: earnedDateEntry ? 6 : Math.max(0, ...Object.values(typesByDay).map(set => set.size)),
+        earned: false,
+        progress: 0,
         maxProgress: 6,
         lastUpdated: now
       }
-    }
 
     case "marathon":
       // Manual badge - no calculation needed
@@ -202,23 +183,14 @@ export const calculateBadgeProgress = (
         lastUpdated: now
       }
 
-    case "tri": {
-      // Earned if the user has ever completed 30,000 meters in a single day
-      const metersByDay: { [date: string]: number } = {}
-      activities.forEach(activity => {
-        const date = activity.date ? (typeof activity.date === 'string' ? activity.date.split('T')[0] : activity.date) : undefined
-        if (!date) return
-        metersByDay[date] = (metersByDay[date] || 0) + (Number(activity.points) || 0)
-      })
-      const earnedDateEntry = Object.entries(metersByDay).find(([_, meters]) => meters >= 30000)
+    case "tri":
+      // This should be calculated in real-time, not migrated
       return {
-        earned: !!earnedDateEntry,
-        earnedDate: earnedDateEntry ? new Date(earnedDateEntry[0]) : undefined,
-        progress: earnedDateEntry ? 30000 : Math.max(0, ...Object.values(metersByDay)),
+        earned: false,
+        progress: 0,
         maxProgress: 30000,
         lastUpdated: now
       }
-    }
 
     case "early-bird":
       const earlyBirdActivities = activities.filter(activity => 
