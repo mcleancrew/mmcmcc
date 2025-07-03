@@ -20,6 +20,8 @@ interface Workout {
   date: Date
   images?: string[]
   notes?: string
+  highlight?: boolean | string
+  highlightReason?: string
 }
 
 function formatRelativeTime(date: Date): string {
@@ -76,7 +78,9 @@ export default function WorkoutsPage() {
                 meters: Number(activity.points) || 0,
                 date: activity.date?.toDate() || new Date(),
                 images: activity.images || (activity.image ? [activity.image] : []),
-                notes: activity.notes || undefined
+                notes: activity.notes || undefined,
+                highlight: activity.highlight,
+                highlightReason: activity.highlightReason
               }
               workouts.push(workout)
             }
@@ -147,69 +151,81 @@ export default function WorkoutsPage() {
         </div>
 
         <div className="grid gap-4">
-          {allWorkouts.map((workout) => (
-            <Card key={workout.id} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-4">
-                  {/* User Info */}
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <Avatar className="h-12 w-12 flex-shrink-0">
-                      <AvatarImage src={workout.userProfileImage || "/placeholder.svg"} alt={workout.userName} />
-                      <AvatarFallback className="bg-blue-100 text-blue-800">
-                        {workout.userName.substring(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <h3 
-                        className="font-semibold text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                        onClick={() => handleUserNameClick(workout.userId)}
-                      >
-                        {workout.userName}
-                      </h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
-                        {formatRelativeTime(workout.date)}
+          {allWorkouts.map((workout) => {
+            const isHighlighted = !!workout.highlight;
+            const highlightReason = typeof workout.highlight === 'string' ? workout.highlight : (workout.highlight?.reason || '');
+            return (
+              <Card key={workout.id} className={`overflow-hidden ${isHighlighted ? 'ring-4 ring-yellow-400 ring-offset-2' : ''}`}>
+                <CardContent className="p-4">
+                  {isHighlighted && (
+                    <div className="mb-2 flex items-center gap-1">
+                      <span className="text-xs font-bold text-yellow-700">Highlight</span>
+                      {highlightReason && (
+                        <span className="text-xs text-yellow-700 ml-1">- {highlightReason}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className="flex items-start gap-4">
+                    {/* User Info */}
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <Avatar className="h-12 w-12 flex-shrink-0">
+                        <AvatarImage src={workout.userProfileImage || "/placeholder.svg"} alt={workout.userName} />
+                        <AvatarFallback className="bg-blue-100 text-blue-800">
+                          {workout.userName.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <h3 
+                          className="font-semibold text-slate-900 dark:text-slate-100 truncate cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                          onClick={() => handleUserNameClick(workout.userId)}
+                        >
+                          {workout.userName}
+                        </h3>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                          {formatRelativeTime(workout.date)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Workout Details */}
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span className={`text-sm px-3 py-1 rounded-full font-medium ${getWorkoutTypeColor(workout.type)}`}>
+                        {workout.type.toUpperCase()}
+                      </span>
+                      <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
+                        {new Intl.NumberFormat().format(workout.meters)}m
                       </p>
                     </div>
                   </div>
 
-                  {/* Workout Details */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <span className={`text-sm px-3 py-1 rounded-full font-medium ${getWorkoutTypeColor(workout.type)}`}>
-                      {workout.type.toUpperCase()}
-                    </span>
-                    <p className="text-lg font-semibold text-blue-600 dark:text-blue-400">
-                      {new Intl.NumberFormat().format(workout.meters)}m
-                    </p>
+                  {/* Image and Notes */}
+                  <div className="mt-4 flex gap-4">
+                    {workout.images && workout.images.length > 0 && (
+                      <div className="flex gap-2 flex-shrink-0">
+                        {workout.images.map((imageUrl, index) => (
+                          <div key={`${workout.id}-${index}`} className="flex-shrink-0">
+                            <img
+                              src={imageUrl}
+                              alt={`${workout.userName}'s workout`}
+                              className="w-32 h-24 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={(e) => handleImageClick(e, imageUrl)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {workout.notes && (
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                          {workout.notes}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                </div>
-
-                {/* Image and Notes */}
-                <div className="mt-4 flex gap-4">
-                  {workout.images && workout.images.length > 0 && (
-                    <div className="flex gap-2 flex-shrink-0">
-                      {workout.images.map((imageUrl, index) => (
-                        <div key={`${workout.id}-${index}`} className="flex-shrink-0">
-                          <img
-                            src={imageUrl}
-                            alt={`${workout.userName}'s workout`}
-                            className="w-32 h-24 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={(e) => handleImageClick(e, imageUrl)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {workout.notes && (
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
-                        {workout.notes}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
 
         {allWorkouts.length === 0 && (

@@ -14,6 +14,7 @@ interface RecentWorkout {
   date: Date
   images?: string[]
   notes?: string
+  highlight?: boolean | string | { reason?: string }
 }
 
 export function useRecentWorkouts() {
@@ -45,7 +46,8 @@ export function useRecentWorkouts() {
                 meters: Number(activity.points) || 0,
                 date: activity.date?.toDate() || new Date(),
                 images: activity.images || (activity.image ? [activity.image] : []),
-                notes: activity.notes || undefined
+                notes: activity.notes || undefined,
+                highlight: activity.highlight
               }
               allWorkouts.push(workout)
             }
