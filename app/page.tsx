@@ -1,5 +1,6 @@
 import TeamOverview from "@/components/team-overview"
 import TopPerformersCard from "@/components/top-performers-card"
+import { RecentWorkoutsGallery } from "@/components/recent-workouts-gallery"
 import { Card, CardContent } from "@/components/ui/card"
 
 export default function Home() {

@@ -74,12 +74,20 @@ export function RecentWorkoutsGallery() {
   return (
     <>
       <div className="space-y-3">
-        <h3 
-          className="text-lg font-semibold text-blue-900 dark:text-blue-100 cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
-          onClick={handleTitleClick}
-        >
-          Recent Workouts
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 
+            className="text-lg font-semibold text-blue-900 dark:text-blue-100 cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            onClick={handleTitleClick}
+          >
+            Recent Workouts
+          </h3>
+          <button
+            onClick={() => router.push('/workouts')}
+            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+          >
+            All Workouts
+          </button>
+        </div>
         <div className="flex gap-3 overflow-x-auto pb-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-slate-100 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-slate-400 dark:[&::-webkit-scrollbar-track]:bg-slate-800 dark:[&::-webkit-scrollbar-thumb]:bg-slate-600 dark:[&::-webkit-scrollbar-thumb]:hover:bg-slate-500">
           {recentWorkouts.map((workout) => {
             const userId = workout.id.split('-')[0]

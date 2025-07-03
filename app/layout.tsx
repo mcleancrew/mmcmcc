@@ -28,8 +28,10 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <AuthWrapper>
-              <div className="flex flex-col min-h-screen max-w-md mx-auto bg-slate-50 dark:bg-slate-950">
-                {children}
+              <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-slate-950">
+                <div className="max-w-md lg:max-w-2xl xl:max-w-4xl mx-auto w-full">
+                  {children}
+                </div>
               </div>
               <Toaster />
             </AuthWrapper>

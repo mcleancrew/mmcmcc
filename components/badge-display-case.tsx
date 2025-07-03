@@ -331,7 +331,7 @@ export function BadgeDisplayCase({ userId }: BadgeDisplayCaseProps) {
   const completionPercentage = (unlockedCount / totalCount) * 100
 
   return (
-    <Card className="mt-6">
+    <Card className="mt-6 max-w-md mx-auto">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl flex items-center gap-2">
