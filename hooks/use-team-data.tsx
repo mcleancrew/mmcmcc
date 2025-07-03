@@ -18,7 +18,6 @@ interface TeamData {
 interface ProgressDataPoint {
   date: string
   meters: number
-  target: number
 }
 
 export function useTeamData() {
@@ -90,44 +89,43 @@ export function useTeamData() {
 
         setTeamData(realTeamData)
 
-        // Calculate real daily team progress
-        const dailyProgress = new Map<string, number>()
-        
-        // Group activities by date and sum meters
-        allActivities.forEach((activity) => {
-          const dateKey = activity.date.toISOString().split('T')[0] // YYYY-MM-DD format
-          const meters = Number(activity.points) || 0
-          dailyProgress.set(dateKey, (dailyProgress.get(dateKey) || 0) + meters)
-        })
-
-        // Calculate daily average from the beginning of summer
-        const summerStartDate = new Date('2024-06-12') // Beginning of summer
-        const today = new Date()
-        const daysSinceSummerStart = Math.max(1, Math.ceil((today.getTime() - summerStartDate.getTime()) / (1000 * 60 * 60 * 24)))
-        const dailyAverage = Math.round(totalMeters / daysSinceSummerStart)
-
-        // Convert to chart data format and sort by date
-        const realProgressData: ProgressDataPoint[] = Array.from(dailyProgress.entries())
-          .map(([date, meters]) => ({
-            date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            meters,
-            target: dailyAverage // Daily average instead of target
-          }))
-          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-
-        // If no real data, provide some default data
-        if (realProgressData.length === 0) {
+        // Generate last 30 days of data in EST timezone
+        const generateLast30DaysData = () => {
+          const data: ProgressDataPoint[] = []
           const today = new Date()
-          const yesterday = new Date(today)
-          yesterday.setDate(yesterday.getDate() - 1)
           
-          realProgressData.push({
-            date: yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-            meters: 0,
-            target: dailyAverage
+          // Convert to EST
+          const todayEST = new Date(today.getTime() - (5 * 60 * 60 * 1000))
+          
+          // Create a map of daily totals from activities
+          const dailyTotals = new Map<string, number>()
+          
+          allActivities.forEach((activity) => {
+            // Convert activity date to EST
+            const activityDate = new Date(activity.date.getTime() - (5 * 60 * 60 * 1000))
+            const dateKey = activityDate.toISOString().split('T')[0] // YYYY-MM-DD format
+            const meters = Number(activity.points) || 0
+            dailyTotals.set(dateKey, (dailyTotals.get(dateKey) || 0) + meters)
           })
+          
+          // Generate data for last 30 days
+          for (let i = 29; i >= 0; i--) {
+            const date = new Date(todayEST)
+            date.setDate(date.getDate() - i)
+            
+            const dateKey = date.toISOString().split('T')[0]
+            const meters = dailyTotals.get(dateKey) || 0
+            
+            data.push({
+              date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+              meters
+            })
+          }
+          
+          return data
         }
 
+        const realProgressData = generateLast30DaysData()
         setProgressData(realProgressData)
 
       } catch (error) {
